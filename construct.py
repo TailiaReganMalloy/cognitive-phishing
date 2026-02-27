@@ -1,14 +1,18 @@
-from utils import . 
+from utils.utils import *
 import pandas as pd 
+import os 
+import time 
 
 def main():
+    model = get_model()
+
     emails = pd.read_csv("./Data/Emails.csv")
 
     emails = emails[emails['Style'] == "Plaintext"]
     emails = emails.reset_index(drop=True)
 
     wide_output_path = "./data/Emails_Cognitive.csv"
-    long_output_path = "./data/Emails_with_llm_effect_predictions_long.csv"
+    long_output_path = "./data/raw/Emails_with_llm_effect_predictions_long.csv"
 
     if os.path.exists(wide_output_path):
         checkpoint_wide_df = pd.read_csv(wide_output_path)

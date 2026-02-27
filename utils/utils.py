@@ -14,7 +14,9 @@ vertexai.init(
     location=os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1"),
 )
 
-model = GenerativeModel(os.getenv("MODEL_NAME", "gemini-2.5-pro"))
+def get_model():
+    model = GenerativeModel(os.getenv("MODEL_NAME", "gemini-2.5-pro"))
+    return model
 
 biases = ['Authority Bias', 'Survivorship Bias',
        'Pessimism Bias', 'Zero-Risk Bias', 'Hyperbolic Discounting',
@@ -62,26 +64,36 @@ def get_instruction(email_row, effects_dict):
         "is a float between 0 and 1 indicating the extent to which the input email corresponds to "
         "that effect. Do not include any additional text, explanations, or code fences."
     )
+    # [0.2, 0.1, .9 ]
 
-    sender_mismatch = "The email has a sender mismatch." if email_row["Sender Mismatch"] == 1 else "The email does not have a sender mismatch."
-    request_credentials = "The email requests credentials." if email_row["Request Credentials"] == 1 else "The email does not request credentials."
-    subject_suspicious = "The email has a suspicious subject." if email_row["Subject Suspicious"] == 1 else "The email does not have a suspicious subject."
-    urgent = "The email has an urgent tone." if email_row["Urgent"] == 1 else "The email does not have an urgent tone."
-    offer = "The email contains an offer." if email_row["Offer"] == 1 else "The email does not contain an offer."
-    link_mismatch = "The email has a link mismatch." if email_row["Link Mismatch"] == 1 else "The email does not have a link mismatch."
+    available_columns = set(email_row.index)
 
-    email_description = (
-        f"Sender: {email_row['Sender']}. "
-        f"Subject: {email_row['Subject']}. "
-        f"Type: {email_row['Type']}. "
-        f"Body: {email_row['Body']}. "
-        f"{sender_mismatch} "
-        f"{request_credentials} "
-        f"{subject_suspicious} "
-        f"{urgent} "
-        f"{offer} "
-        f"{link_mismatch}"
-    )
+    email_description_parts = []
+
+    for base_col in ["Sender", "Subject", "Type", "Body", "text", "text_translated"]:
+        if base_col in available_columns:
+            value = email_row[base_col]
+            if pd.notna(value):
+                email_description_parts.append(f"{base_col}: {value}.")
+
+    flag_templates = {
+        "Sender Mismatch": ("The email has a sender mismatch.", "The email does not have a sender mismatch."),
+        "Request Credentials": ("The email requests credentials.", "The email does not request credentials."),
+        "Subject Suspicious": ("The email has a suspicious subject.", "The email does not have a suspicious subject."),
+        "Urgent": ("The email has an urgent tone.", "The email does not have an urgent tone."),
+        "Offer": ("The email contains an offer.", "The email does not contain an offer."),
+        "Link Mismatch": ("The email has a link mismatch.", "The email does not have a link mismatch."),
+    }
+
+    for col_name, (true_text, false_text) in flag_templates.items():
+        if col_name in available_columns and pd.notna(email_row[col_name]):
+            try:
+                is_true = float(email_row[col_name]) == 1.0
+            except Exception:
+                is_true = str(email_row[col_name]).strip() == "1"
+            email_description_parts.append(true_text if is_true else false_text)
+
+    email_description = " ".join(email_description_parts)
 
     return f"{task_instruction}\n\nEmail to evaluate:\n{email_description}"
 
@@ -172,4 +184,17 @@ def generate_with_retry(model_obj, prompt):
                 wait_seconds += 10
                 continue
             raise
+
+
+__all__ = [
+    "get_model",
+    "biases",
+    "effects",
+    "get_instruction",
+    "parse_effect_scores",
+    "format_seconds",
+    "print_progress",
+    "is_resource_exhausted_429",
+    "generate_with_retry",
+]
 
