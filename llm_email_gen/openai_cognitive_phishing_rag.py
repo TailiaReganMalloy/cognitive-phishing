@@ -3,9 +3,7 @@ import pandas as pd
 import os
 from openai import OpenAI
 
-from llm_email_gen.keys.openai import OPENAI_API_KEY
-
-client = OpenAI(api_key=OPENAI_API_KEY)
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 class CognitivePhishingRAG:
     def __init__(self, dataset_path, definitions_path):
         self.df = pd.read_csv(dataset_path)
