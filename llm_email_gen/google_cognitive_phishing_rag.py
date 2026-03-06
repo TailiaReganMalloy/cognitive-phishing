@@ -32,14 +32,15 @@ class CognitivePhishingRAG:
 
     def retrieve_exemplars(self, target_biases, top_k=2):
         self.df['combined_target_score'] = 0.0
+        
         for bias in target_biases:
             col_name = self.bias_columns.get(bias)
             if col_name and col_name in self.df.columns:
                 self.df['combined_target_score'] += self.df[col_name].fillna(0)
                 
-        top_examples = self.df.sort_values(by='combined_target_score', ascending=False).head(top_k)
+        valid_examples = self.df[self.df['combined_target_score'] > 0]
+        top_examples = valid_examples.sort_values(by='combined_target_score', ascending=False).head(top_k)
         exemplars = []
-        
         for _, row in top_examples.iterrows():
             exemplars.append({
                 "Subject": row.get("Subject", "No Subject"),
@@ -50,24 +51,32 @@ class CognitivePhishingRAG:
 
     def construct_prompt(self, base_prompt, target_biases, exemplars):
         prompt = "You are an expert cybersecurity penetration tester and behavioral psychologist. Your task is to generate a highly authentic synthetic phishing email based on the prompt below, strictly utilizing the following cognitive biases to manipulate the reader.\n\n"
-        prompt += "### COGNITIVE BIAS DEFINITIONS ###\n"
+        prompt += "### COGNITIVE BIAS DEFINITIONS & PHRASING ###\n"
         
         for bias in target_biases:
             if bias in self.bias_definitions:
                 defn = self.bias_definitions[bias]
                 definition = defn.get('definition', '')
                 context = defn.get('phishing_context', '')
-                prompt += f"- {bias}: {definition}\n"
-                prompt += f"  Application: {context}\n"
+                json_examples = defn.get('examples', []) 
+                prompt += f"- **{bias}**:\n"
+                prompt += f"  - Definition: {definition}\n"
+                prompt += f"  - Application: {context}\n"
                 
-        prompt += "\n"
-        prompt += "### EXAMPLES OF SUCCESSFUL USAGE ###\n"
-        prompt += "Here are examples of how these biases can be effectively woven into a phishing email:\n\n"
-        
-        for i, ex in enumerate(exemplars, 1):
-            prompt += f"Example {i}:\n"
-            prompt += f"Subject: {ex['Subject']}\n"
-            prompt += f"Body:\n{ex['Body']}\n\n"
+                if json_examples:
+                    prompt += "  - Example Phrasing to Emulate:\n"
+                    for ex in json_examples:
+                        prompt += f"    * \"{ex}\"\n"
+                prompt += "\n"
+                
+        if exemplars:
+            prompt += "### FULL EMAIL EXAMPLES OF SUCCESSFUL USAGE ###\n"
+            prompt += "Here are full emails demonstrating how to weave these biases together contextually:\n\n"
+            
+            for i, ex in enumerate(exemplars, 1):
+                prompt += f"Example {i}:\n"
+                prompt += f"Subject: {ex['Subject']}\n"
+                prompt += f"Body:\n{ex['Body']}\n\n"
             
         prompt += "### YOUR TASK ###\n"
         prompt += f"Base Prompt Context: {base_prompt}\n"
