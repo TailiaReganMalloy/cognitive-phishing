@@ -87,7 +87,7 @@ class CognitivePhishingRAG:
                 {"role": "user", "content": system_prompt}
             ],
             options={
-                "temperature": 0.7,
+                "temperature": 0.0,
                 "num_predict": 800
             }
         )
