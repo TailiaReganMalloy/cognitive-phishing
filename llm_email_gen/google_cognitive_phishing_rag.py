@@ -7,11 +7,21 @@ from google.genai import types
 class CognitivePhishingRAG:
     def __init__(self, dataset_path, definitions_path, project_id=None, location="us-central1"):
         project = project_id or os.getenv("GOOGLE_CLOUD_PROJECT")
-        self.client = genai.Client(
-            vertexai=True, 
-            project=project, 
-            location=location
-        )
+        api_key = os.getenv("GOOGLE_API_KEY")
+
+        if project:
+            self.client = genai.Client(
+                vertexai=True,
+                project=project,
+                location=location
+            )
+        elif api_key:
+            self.client = genai.Client(api_key=api_key)
+        else:
+            raise ValueError(
+                "Missing Google GenAI configuration. Set GOOGLE_CLOUD_PROJECT for Vertex AI "
+                "or GOOGLE_API_KEY for Developer API access."
+            )
         self.df = pd.read_csv(dataset_path)
 
         with open(definitions_path, 'r') as f:
