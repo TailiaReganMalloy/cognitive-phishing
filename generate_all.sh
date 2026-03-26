@@ -1,0 +1,5 @@
+python generate_email_categories.py
+python Analysis/analyze_email_categories.py
+python generate_chosen_emails.py
+python Analysis/analyze_email_categories.py
+python generate_new_emails.py
