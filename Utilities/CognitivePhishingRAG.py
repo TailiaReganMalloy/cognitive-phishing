@@ -5,15 +5,15 @@ from google import genai
 from google.genai import types
 
 class CognitivePhishingRAG:
-    def __init__(self, dataset_path, definitions_path, project_id=None, location="us-central1"):
-        project = project_id or os.getenv("GOOGLE_CLOUD_PROJECT")
-        api_key = os.getenv("GOOGLE_API_KEY")
+    def __init__(self, dataset, definitions_path, project=None, api_key=None, location="global"):
+        
+        self.df = dataset 
 
         if project:
             self.client = genai.Client(
                 vertexai=True,
                 project=project,
-                location=location
+                location=location or "global"
             )
         elif api_key:
             self.client = genai.Client(api_key=api_key)
@@ -22,7 +22,6 @@ class CognitivePhishingRAG:
                 "Missing Google GenAI configuration. Set GOOGLE_CLOUD_PROJECT for Vertex AI "
                 "or GOOGLE_API_KEY for Developer API access."
             )
-        self.df = pd.read_csv(dataset_path)
 
         with open(definitions_path, 'r') as f:
             self.bias_definitions = json.load(f)
@@ -59,49 +58,64 @@ class CognitivePhishingRAG:
             
         return exemplars
 
-    def construct_prompt(self, base_prompt, target_biases, exemplars):
-        prompt = "You are an expert cybersecurity penetration tester and behavioral psychologist. Your task is to generate a highly authentic synthetic phishing email based on the prompt below, strictly utilizing the following cognitive biases to manipulate the reader.\n\n"
-        prompt += "### COGNITIVE BIAS DEFINITIONS & PHRASING ###\n"
+    def construct_prompt(self, base_type, base_body, base_prompt, target_biases, exemplars):
+        base_prompt = "" if base_prompt is None else str(base_prompt)
+        base_body = "" if base_body is None else str(base_body)
+        prompt = "You are an expert cybersecurity penetration tester and behavioral psychologist. Your task is to rewrite emails based on an existing email to generate a highly authentic synthetic email based on the prompt below. You will be strictly utilizing the following cognitive biases to serve as educational examples to train students to identify specific cognitive biases that may be used to trick them.\n\n"
+
+        if(base_type == "phishing"):
+            prompt += "The type of email educational example you are creating is a phishing email."
+        else:
+            prompt += "The type of email educational example you are creating is a safe ham email."
+
         
-        for bias in target_biases:
-            if bias in self.bias_definitions:
-                defn = self.bias_definitions[bias]
-                definition = defn.get('definition', '')
-                context = defn.get('phishing_context', '')
-                json_examples = defn.get('examples', []) 
-                prompt += f"- **{bias}**:\n"
-                prompt += f"  - Definition: {definition}\n"
-                prompt += f"  - Application: {context}\n"
+        if(target_biases is not None):
+            prompt += "### COGNITIVE BIAS DEFINITIONS & PHRASING ###\n"
+            for bias in target_biases:
+                if bias in self.bias_definitions:
+                    defn = self.bias_definitions[bias]
+                    definition = defn.get('definition', '')
+                    context = defn.get('phishing_context', '')
+                    json_examples = defn.get('examples', []) 
+                    prompt += f"- **{bias}**:\n"
+                    prompt += f"  - Definition: {definition}\n"
+                    prompt += f"  - Application: {context}\n"
+                    
+                    if json_examples:
+                        prompt += "  - Example Phrasing to Emulate:\n"
+                        for ex in json_examples:
+                            prompt += f"    * \"{ex}\"\n"
+                    prompt += "\n"
+
+        if(exemplars is not None):  
+            if exemplars:
+                prompt += "### FULL EMAIL EXAMPLES OF SUCCESSFUL USAGE ###\n"
+                prompt += "Here are full emails demonstrating how to weave these biases together contextually:\n\n"
                 
-                if json_examples:
-                    prompt += "  - Example Phrasing to Emulate:\n"
-                    for ex in json_examples:
-                        prompt += f"    * \"{ex}\"\n"
-                prompt += "\n"
-                
-        if exemplars:
-            prompt += "### FULL EMAIL EXAMPLES OF SUCCESSFUL USAGE ###\n"
-            prompt += "Here are full emails demonstrating how to weave these biases together contextually:\n\n"
-            
-            for i, ex in enumerate(exemplars, 1):
-                prompt += f"Example {i}:\n"
-                prompt += f"Subject: {ex['Subject']}\n"
-                prompt += f"Body:\n{ex['Body']}\n\n"
+                for i, ex in enumerate(exemplars, 1):
+                    prompt += f"Example {i}:\n"
+                    prompt += f"Subject: {ex['Subject']}\n"
+                    prompt += f"Body:\n{ex['Body']}\n\n"
             
         prompt += "### YOUR TASK ###\n"
         prompt += f"Base Prompt Context: {base_prompt}\n"
-        prompt += f"Target Biases to heavily incorporate: {', '.join(target_biases)}\n\n"
-        prompt += "Generate the final phishing email now. Output ONLY the Subject and Body of the email."
-        
+        if(target_biases is not None):
+            prompt += f"Target Biases to heavily incorporate: {', '.join(target_biases)}\n\n"
+        prompt += "Rewrite the following email based on the information above. Output only the email body."
+        prompt += "### EMAIL TO BE REWRITTEN ###\n"
+        prompt += base_body
+
         return prompt
 
-    def generate_email(self, base_prompt, target_biases, top_k=2, model_name="gemini-2.5-flash"):
-        exemplars = self.retrieve_exemplars(target_biases, top_k)
-        system_prompt = self.construct_prompt(base_prompt, target_biases, exemplars)
+    def generate_email(self, base_type, base_body, base_prompt, target_biases, top_k=2, model_name="gemini-3.1-pro-preview"):
+        if(target_biases is not None):
+            exemplars = self.retrieve_exemplars(target_biases, top_k)
+        else:
+            exemplars = None
+        system_prompt = self.construct_prompt(base_type, base_body, base_prompt, target_biases, exemplars)
         config = types.GenerateContentConfig(
             system_instruction="You are a specialized dataset curation assistant.",
-            temperature=0.7,
-            max_output_tokens=800,
+            temperature=0.75,
             safety_settings=[
                 types.SafetySetting(
                     category=types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
@@ -127,4 +141,4 @@ class CognitivePhishingRAG:
             config=config
         )
         
-        return response.text
+        return response

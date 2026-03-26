@@ -4,24 +4,33 @@ import json
 import time
 from pathlib import Path
 from dotenv import load_dotenv
-import vertexai
-from vertexai.generative_models import GenerativeModel
 import pandas as pd 
+
+try:
+    import vertexai
+    from vertexai.generative_models import GenerativeModel
+except ModuleNotFoundError:
+    vertexai = None
+    GenerativeModel = None
 
 load_dotenv()
 
-vertexai.init(
-    project=os.environ["GOOGLE_CLOUD_PROJECT"],
-    location=os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1"),
-)
-
 def get_model():
+    if vertexai is None or GenerativeModel is None:
+        raise ModuleNotFoundError(
+            "vertexai is required for get_model(). Install google-cloud-aiplatform to use this path."
+        )
+
+    vertexai.init(
+        project=os.environ["GOOGLE_CLOUD_PROJECT"],
+        location=os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1"),
+    )
     model = GenerativeModel(os.getenv("MODEL_NAME", "gemini-2.5-pro")) # gemini-3.1-pro-preview
     return model
 
 def _load_effects_from_json():
     repo_root = Path(__file__).resolve().parent.parent
-    definitions_path = repo_root / "cognitive_bias_definitions.json"
+    definitions_path = repo_root / "Data/Biases/bias_definitions.json"
 
     with definitions_path.open("r", encoding="utf-8") as f:
         raw_definitions = json.load(f)
@@ -217,6 +226,52 @@ def generate_with_retry(model_obj, prompt):
                 continue
             raise
 
+def parse_llm_raw_response(raw_text):
+    text = str(raw_text).strip()
+
+    # Handle markdown fenced JSON responses from model output.
+    if text.startswith("```"):
+        lines = text.splitlines()
+        if lines and lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        text = "\n".join(lines).strip()
+        if text.lower().startswith("json"):
+            text = text[4:].strip()
+
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError:
+        parsed = ast.literal_eval(text)
+
+    if not isinstance(parsed, dict):
+        raise ValueError("LLM Raw Response is not a dictionary")
+
+    return parsed
+
+def get_max_biases(num_biases, bias_scores):
+    if not isinstance(num_biases, int) or num_biases <= 0:
+        raise ValueError("num_biases must be a positive integer")
+    if not isinstance(bias_scores, dict):
+        raise ValueError("bias_scores must be a dictionary")
+
+    numeric_scores = {}
+    for bias_name, score in bias_scores.items():
+        try:
+            numeric_scores[bias_name] = float(score)
+        except (TypeError, ValueError):
+            continue
+
+    if not numeric_scores or max(numeric_scores.values()) <= 0:
+        return None
+
+    top_items = sorted(
+        numeric_scores.items(),
+        key=lambda item: item[1],
+        reverse=True,
+    )[: min(num_biases, len(numeric_scores))]
+    return dict(top_items)
 
 __all__ = [
     "get_model",
@@ -228,5 +283,7 @@ __all__ = [
     "print_progress",
     "is_resource_exhausted_429",
     "generate_with_retry",
+    "parse_llm_raw_response",
+    "get_max_biases"
 ]
 
