@@ -1,0 +1,58 @@
+{
+  "Authority bias trigger": {
+    "definition": "Any word, phrase, or message that invokes or impersonates an authority figure (e.g., a senior executive, official organization, or institutional source) to increase perceived legitimacy and prompt compliance.",
+    "examples": [
+      "IRS: Official inquiry regarding your recent tax return.",
+      "IT Security Team: Security alert: Urgent update required for your workstations.",
+      "HR Director request: Confirm your SSN in the attached form."
+    ]
+  },
+  "Scarcity bias trigger": {
+    "definition": "Any word, phrase, or message that emphasizes limited availability, exclusivity, or restricted access in order to prompt action.",
+    "examples": [
+      "Only 3 spots left to secure your year-end bonus—claim now.",
+      "Congratulations! You have been randomly selected as one of only 10 users to participate in our exclusive beta testing for the new company portal.",
+      "We are distributing a limited number of complimentary coffee vouchers to staff this morning."
+    ]
+  },
+  "Urgency bias trigger": {
+    "definition": "Any word, phrase, or message that conveys time pressure or imminent negative consequences to encourage immediate action.",
+    "examples": [
+      "Immediate action required: Your account will be locked in 30 minutes.",
+      "Unauthorized login attempt detected. Log in now to secure your funds.",
+      "Payment overdue. Click the link to settle your balance before service interruption."
+    ]
+  },
+  "Anchoring effect trigger": {
+    "definition": "Any word, phrase, or message that highlights a specific number, value, or reference point to draw attention and influence judgment or interpretation.",
+    "examples": [
+      "Storage alert: You have used 1,989 MB of your 2,000 MB limit.",
+      "Invoice #84729 for $4,892 is overdue—confirm payment.",
+      "Your 2023 tax refund of $3,216 is pending—verify here."
+    ]
+  },
+  "Conformity bias trigger": {
+    "definition": "Any word, phrase, or message that suggests others have already taken an action or that a behavior is the norm, encouraging the recipient to follow.",
+    "examples": [
+      "85% of your colleagues have already activated their new web portal. Join them today.",
+      "Due to recent activity, all account holders must comply with these new security steps.",
+      "Your team has recommended this shared document. Please log in to view the file."
+    ]
+  },
+  "Overconfidence trigger": {
+    "definition": "Any word, phrase, or message that appeals to the recipient’s perceived expertise or competence, encouraging reduced scrutiny and increased trust in the message.",
+    "examples": [
+      "Commending your security awareness: Click here for a special security update for advanced users.",
+      "Based on your advanced technical profile, you have been selected to manually audit the new security protocols.",
+      "Your recent activity confirms your high compliance with company protocols. Please log in here to independently certify your session history and maintain your 'Expert-Level' security status."
+    ]
+  },
+  "Familiarity bias trigger": {
+    "definition": "Any word, phrase, or message that references known individuals, organizations, or contexts to increase perceived trust and legitimacy.",
+    "examples": [
+      "Helping the university: Go [university mascot]! Log in to the new portal to show your support.",
+      "Hi [name], returning the favor from our last project. Check the attached details.",
+      "A friend has tagged you in a photo. Click here to view it on [social media website]."
+    ]
+  }
+}
