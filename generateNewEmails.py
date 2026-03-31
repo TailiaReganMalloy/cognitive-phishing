@@ -102,13 +102,30 @@ for idx in tqdm(pending_indices, total=len(pending_indices), desc="Generating em
         parsed_response = parse_llm_raw_response(Email["LLM Raw Response"])
         target_biases = get_max_biases(2, parsed_response)
 
-        response, system_prompt, config, model_name = EmailGenerator.generate_email(
+        generation_result = EmailGenerator.generate_email(
             base_type=base_type,
             base_body=base_body,
             base_prompt=base_prompt,
             target_biases=target_biases,
             model_name=model
         )
+
+        # Backward compatibility: support both tuple and plain-text return signatures.
+        if isinstance(generation_result, tuple):
+            if len(generation_result) == 4:
+                response, system_prompt, config, model_name = generation_result
+            elif len(generation_result) == 1:
+                response = generation_result[0]
+                system_prompt = base_prompt
+                config = ""
+                model_name = model
+            else:
+                raise ValueError(f"Unexpected generate_email return length: {len(generation_result)}")
+        else:
+            response = generation_result
+            system_prompt = base_prompt
+            config = ""
+            model_name = model
 
         response_text = response.text if response is not None else ""
         Emails_Chosen.at[idx, "New Email Body"] = response_text

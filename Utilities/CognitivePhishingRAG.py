@@ -141,4 +141,4 @@ class CognitivePhishingRAG:
             config=config
         )
         
-        return response
+        return response, system_prompt, config, model_name
