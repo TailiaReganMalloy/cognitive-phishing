@@ -22,7 +22,7 @@ def main() -> None:
     records = []
     for _, row in df.iterrows():
         new_body = "" if pd.isna(row.get(new_body_column)) else str(row.get(new_body_column))
-        old_body = "" if pd.isna(row.get("Body")) else str(row.get("Body"))
+        old_body = "" if pd.isna(row.get("GPT Email Body")) else str(row.get("GPT Email Body"))
         records.append(
             {
                 "email_id": "" if pd.isna(row.get("EmailId")) else str(row.get("EmailId")),
@@ -158,6 +158,7 @@ def main() -> None:
 
   <script>
     const emails = {json.dumps(records)};
+    const STORAGE_KEY = 'email_viewer_last_position_v1';
     let idx = 0;
 
     const newPreview = document.getElementById('newPreview');
@@ -169,6 +170,39 @@ def main() -> None:
     function clampIndex(value) {{
       if (emails.length === 0) return 0;
       return Math.max(0, Math.min(emails.length - 1, value));
+    }}
+
+    function restoreIndex() {{
+      if (emails.length === 0) return 0;
+      try {{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return 0;
+        const saved = JSON.parse(raw);
+
+        // Prefer matching by EmailId in case row ordering changed.
+        if (saved && saved.email_id) {{
+          const found = emails.findIndex((row) => String(row.email_id) === String(saved.email_id));
+          if (found >= 0) return found;
+        }}
+
+        if (saved && Number.isFinite(saved.idx)) {{
+          return clampIndex(saved.idx);
+        }}
+      }} catch (_err) {{
+        // Ignore malformed saved state and fall back to first row.
+      }}
+      return 0;
+    }}
+
+    function saveIndex() {{
+      if (emails.length === 0) return;
+      const row = emails[idx] || {{}};
+      const payload = {{ idx, email_id: row.email_id || '' }};
+      try {{
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      }} catch (_err) {{
+        // Ignore storage errors (e.g., private mode restrictions).
+      }}
     }}
 
     function render() {{
@@ -191,6 +225,7 @@ def main() -> None:
       metaLabel.textContent =
         `EmailId: ${{row.email_id || 'N/A'}} | Author: ${{row.author || 'N/A'}} | Style: ${{row.style || 'N/A'}} | Type: ${{row.type || 'N/A'}} | Status: ${{row.status || 'N/A'}}`;
       jumpInput.value = idx + 1;
+      saveIndex();
     }}
 
     function next() {{
@@ -218,6 +253,7 @@ def main() -> None:
       if (event.key === 'ArrowLeft') prev();
     }});
 
+    idx = restoreIndex();
     render();
   </script>
 </body>
