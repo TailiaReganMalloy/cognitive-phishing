@@ -1,0 +1,58 @@
+{
+  "Authority bias trigger": {
+    "definition": "invokes or impersonates an authority figure (e.g., a senior executive, official organization, or institutional source)",
+    "examples": [
+      "IRS",
+      "IT Security Team",
+      "HR Director"
+    ]
+  },
+  "Scarcity bias trigger": {
+    "definition": "emphasizes limited availability, exclusivity, or restricted access",
+    "examples": [
+      "Only 3 spots left",
+      "selected as one of only 10 users",
+      "limited number"
+    ]
+  },
+  "Urgency bias trigger": {
+    "definition": "conveys time pressure or imminent negative consequences",
+    "examples": [
+      "locked in 30 minutes.",
+      "Unauthorized login attempt",
+      ["Payment overdue.","before service interruption."]
+    ]
+  },
+  "Anchoring effect trigger": {
+    "definition": "highlights a numerical value to increase perceived legitimacy and prompt compliance.",
+    "examples": [
+      ["1,989 MB","2,000 MB"],
+      ["#84729", "$4,892"],
+      "$3,216"
+    ]
+  },
+  "Conformity bias trigger": {
+    "definition": "suggests others have already taken an action or that a behavior is the norm",
+    "examples": [
+      "85% of your colleagues",
+      "all account holders must comply",
+      "Your team has recommended this"
+    ]
+  },
+  "Overconfidence trigger": {
+    "definition": "appeals to the recipient’s perceived expertise or competence",
+    "examples": [
+      ["Commending your security awareness", "for advanced users"],
+      "Based on your advanced technical profile",
+      ["your high compliance with company protocols", "maintain your 'Expert-Level' security status"]
+    ]
+  },
+  "Familiarity bias trigger": {
+    "definition": "references known individuals, organizations, or contexts",
+    "examples": [
+      "Go [university mascot]!",
+      ["Hi [name]", "favor from our last project"], 
+      ["A friend", "on [social media website]"]
+    ]
+  }
+}
