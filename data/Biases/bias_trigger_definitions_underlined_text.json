@@ -19,16 +19,16 @@
     "definition": "conveys time pressure or imminent negative consequences",
     "examples": [
       "locked in 30 minutes.",
-      "Unauthorized login attempt",
+      "Log in now to secure your funds",
       ["Payment overdue.","before service interruption."]
     ]
   },
   "Anchoring effect trigger": {
-    "definition": "highlights a numerical value to increase perceived legitimacy and prompt compliance.",
+    "definition": "presents a salient numerical value as an initial reference point, thereby biasing the recipient’s subsequent numerical judgments",
     "examples": [
-      ["1,989 MB","2,000 MB"],
-      ["#84729", "$4,892"],
-      "$3,216"
+      ["$4,216","$2,900–$3,100"],
+      ["$4,892", "$1,650"],
+      ["1,989 MB of 2,000 MB","1,450 MB"]
     ]
   },
   "Conformity bias trigger": {

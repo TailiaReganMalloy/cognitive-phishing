@@ -24,11 +24,11 @@
     ]
   },
   "Anchoring effect trigger": {
-    "definition": "Any part of the email (sender address, subject line, or text within the body) that highlights a numerical value to increase perceived legitimacy and prompt compliance.",
+    "definition": "Any part of the email (sender address, subject line, or text within the body) that presents a salient numerical value as an initial reference point, thereby biasing the recipient’s subsequent numerical judgments to prompt compliance.",
     "examples": [
-      "Storage alert: You have used 1,989 MB of your 2,000 MB limit.",
-      "Invoice #84729 for $4,892 is overdue—confirm payment.",
-      "Your 2023 tax refund of $3,216 is pending—verify here."
+      "Based on your filing, your estimated refund is $4,216. Most users in your bracket receive between $2,900–$3,100, but adjustments may apply—confirm your details here.",
+      "Your original invoice total is $4,892. A revised payment of $1,650 has been approved after adjustments—submit payment to finalize processing.",
+      "Your current usage is 1,989 MB of 2,000 MB. Most accounts exceeding 1,450 MB are flagged and overages typically incur fees."
     ]
   },
   "Conformity bias trigger": {
